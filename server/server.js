@@ -1,6 +1,13 @@
+require('./config/config');
+
 const express = require('express');
-//const hbs = require('hbs');
+const bodyParser = require('body-parser')
+const hbs = require('hbs');
 //const fs = require('fs');
+
+const {mongoose} = require('./db/mongoose');
+let {Blog} = require('./models/blog')
+const port = process.env.PORT;
 
 var app = express(); // to intiate the express function.
 
@@ -13,29 +20,36 @@ var app = express(); // to intiate the express function.
   * setting up the express.static as the last middleware, you can use your maintainance code in all of thee pages.
 */
 
-
+app.set('view engine', 'hbs');
+app.use(bodyParser.json());
 
 // use express middleware.
 app.use(express.static(__dirname + '/public'));
 
+
+
 // get the response from the server.
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/views/index.html')
+  res.render('index.hbs')
 })
 
 app.get('/about', (req, res) => {
-  res.sendFile(__dirname + '/views/about.html')
+  res.render('about.hbs')
 });
 
 app.get('/work', (req, res) => {
-  res.sendFile(__dirname + '/views/work.html')
+  res.render('work.hbs')
+});
+
+app.get('/blog', (req, res) => {
+  res.render('blog.hbs')
 });
 
 app.get('/contact', (req, res) => {
-  res.sendFile(__dirname + '/views/contact.html')
+  res.render('contact.hbs')
 });
 
 // create a server to make requests and get back data. Listen to some port.
-app.listen(3000, () => {
-  console.log('Server is up and running on port 3000')
+app.listen(port, () => {
+  console.log('Server is up and running on port ', port)
 });
