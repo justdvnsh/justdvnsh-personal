@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser')
 const hbs = require('hbs');
 const _ = require('lodash');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 //const fs = require('fs');
 
 const {mongoose} = require('./db/mongoose');
@@ -28,29 +30,61 @@ app.set('view engine', 'hbs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(cookieParser());
+
+// initialize express-session to allow us track the logged-in user across sessions.
+app.use(session({
+    key: 'user_sid',
+    secret: 'somerandonstuffs',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        expires: 600000
+    }
+}));
+
+// This middleware will check if user's cookie is still saved in browser and user is not set, then automatically log the user out.
+// This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
+app.use((req, res, next) => {
+    if (req.cookies.user_sid && !req.session.user) {
+        res.clearCookie('user_sid');
+    }
+    next();
+});
+
+
+// middleware function to check for logged-in users
+let sessionChecker = (req, res, next) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.redirect('/dashboard');
+    } else {
+        next();
+    }
+};
+
 // use express middleware.
 app.use(express.static(__dirname + '/public'));
 
 
 
 // get the response from the server.
-app.get('/', (req, res) => {
+app.get('/', sessionChecker, (req, res) => {
   res.render('index.hbs')
 })
 
-app.get('/about', (req, res) => {
+app.get('/about', sessionChecker, (req, res) => {
   res.render('about.hbs')
 });
 
-app.get('/work', (req, res) => {
+app.get('/work', sessionChecker, (req, res) => {
   res.render('work.hbs')
 });
 
-app.get('/blog', (req, res) => {
+app.get('/blog', sessionChecker, (req, res) => {
   res.render('blog.hbs')
 });
 
-app.get('/contact', (req, res) => {
+app.get('/contact', sessionChecker, (req, res) => {
   res.render('contact.hbs')
 });
 
@@ -71,38 +105,41 @@ app.post('/admin/signup', (req,res) => {
 //   res.status(200).send(req.user)
 // })
 
-app.get('/admin', (req, res) => {
+app.get('/admin', sessionChecker,(req, res) => {
   //console.log(req.body)
   res.render('admin.hbs')
 })
 
 app.post('/admin', (req, res) => {
-  console.log(req.body)
-  let body = _.pick(req.body, ['email', 'password'])
-  console.log(body)
+        let email = req.body.email,
+            password = req.body.password;
+            console.log(email,password)
+        Users.findByCredentials(email, password).then((user) => {
+            if (!user) {
+                res.redirect('/admin');
+            } else {
+                req.session.user = user.dataValues;
+                res.redirect('/dashboard');
+            }
+        }).catch((e) => {res.send(e)});
+    });
 
-  Users.findByCredentials(body.email, body.password).then((user) => {
-    return user.generateAuthToken().then((token) => {
-      console.log(req.body.email, req.body.password)
-      res.header('x-auth', token).send({user})
-    })
-  }).catch((e) => {
-    console.log('error:->',{e})
-    res.status(400).send(e)
-  })
-})
-
-// app.get('/admin/blog', authenticate, (req,res) => {
-//   res.render('admin_blog.hbs', {email: req.body})
-// })
+app.get('/dashboard', (req,res) => {
+  if (req.session.user && req.cookies.user_sid) {
+      res.render('dashboard.hbs');
+  } else {
+      res.redirect('/admin');
+  }
+ })
 
 
-app.post('/admin/logout', (req, res) => {
-  req.user.removeToken(req.token).then(() => {
-    res.redirect('/')
-  }).catch((e) => {
-    res.send(e)
-  })
+app.get('/admin/logout', (req, res) => {
+  if (req.session.user && req.cookies.user_sid) {
+       res.clearCookie('user_sid');
+       res.redirect('/dashboard');
+   } else {
+       res.redirect('/admin');
+   }
 })
 
 // create a server to make requests and get back data. Listen to some port.
