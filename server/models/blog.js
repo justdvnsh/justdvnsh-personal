@@ -5,22 +5,23 @@ let Blog = mongoose.model('Blog', {
     type: String,
     required: true,
     trim: true,
-    minlength: 5
+    minlength: 1
   },
   body: {
     type: String,
     required: true,
     trim: true,
-    minlength: 100
+    minlength: 1
   },
   postedAt: {
-    type: Number,
+    type: String,
     default: null
   },
   _author: {
     type: mongoose.Schema.Types.ObjectId,
     required: true
-  }
+  },
+  tags: [String]
 });
 
 module.exports = {

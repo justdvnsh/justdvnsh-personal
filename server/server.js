@@ -4,9 +4,20 @@ const express = require('express');
 const bodyParser = require('body-parser')
 const hbs = require('hbs');
 const _ = require('lodash');
+const passport = require('passport');
+const localStrategy = require('passport-local').Strategy
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-//const fs = require('fs');
+const markdown = require('markdown').markdown;
+const markdownIt = require('markdown-it')
+// //const fs = require('fs');
+// const editor = require("pagedown-editor");
+//
+// function getPagedownEditor() {
+//     return editor.getPagedownEditor();
+// }
+//
+// global.window.getPagedownEditor = getPagedownEditor;
 
 const {mongoose} = require('./db/mongoose');
 let {Blog} = require('./models/blog')
@@ -16,7 +27,7 @@ let {authenticate} = require('./middleware/authenticate')
 const port = process.env.PORT;
 
 var app = express(); // to intiate the express function.
-
+var md = new markdownIt();
 //hbs.registerPartials(__dirname + '/views/partials')
 // use the tempalating engine.
 //app.set('view engine', 'hbs');
@@ -32,114 +43,121 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
+hbs.registerHelper('md', (text) => {
+  //let string = hbs.handlebars.Utils.escapeExpression(text)
+  var marked = md.render(text)
+  return new hbs.handlebars.SafeString(marked);
+})
+
 // initialize express-session to allow us track the logged-in user across sessions.
 app.use(session({
     key: 'user_sid',
     secret: 'somerandonstuffs',
     resave: false,
-    saveUninitialized: false,
-    cookie: {
-        expires: 600000
-    }
+    saveUninitialized: false
 }));
+app.use(passport.initialize())
+app.use(passport.session())
 
-// This middleware will check if user's cookie is still saved in browser and user is not set, then automatically log the user out.
-// This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
-app.use((req, res, next) => {
-    if (req.cookies.user_sid && !req.session.user) {
-        res.clearCookie('user_sid');
-    }
-    next();
-});
-
-
-// middleware function to check for logged-in users
-let sessionChecker = (req, res, next) => {
-    if (req.session.user && req.cookies.user_sid) {
-        res.redirect('/dashboard');
-    } else {
-        next();
-    }
-};
+//passport middleware
+passport.use(new localStrategy(Users.authenticate()))
+passport.serializeUser(Users.serializeUser());
+passport.deserializeUser(Users.deserializeUser());
 
 // use express middleware.
 app.use(express.static(__dirname + '/public'));
+app.use('/scripts', express.static(__dirname + '/../node_modules/markdown/lib'));
 
 
 
 // get the response from the server.
-app.get('/', sessionChecker, (req, res) => {
+app.get('/', (req, res) => {
   res.render('index.hbs')
 })
 
-app.get('/about', sessionChecker, (req, res) => {
+app.get('/about',(req, res) => {
   res.render('about.hbs')
 });
 
-app.get('/work', sessionChecker, (req, res) => {
+app.get('/work', (req, res) => {
   res.render('work.hbs')
 });
 
-app.get('/blog', sessionChecker, (req, res) => {
-  res.render('blog.hbs')
+
+app.get('/blog',(req, res) => {
+  Blog.find({}).sort({postedAt: 'desc'}).then((result) => {
+    console.log(result[0])
+    let blogs = []
+    for (let i in result) {
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt});
+    }
+    console.log(blogs)
+    res.render('blog.hbs', {blogs: blogs, md: md})
+  }).catch((e) => {
+    console.log(e)
+    res.send({e})
+  })
+
 });
 
-app.get('/contact', sessionChecker, (req, res) => {
+app.get('/contact',(req, res) => {
   res.render('contact.hbs')
 });
 
-app.post('/admin/signup', (req,res) => {
-  let body = _.pick(req.body, ['email', 'password']);
-  let user = new Users(body);
-
-  user.save().then(() => {
-    return user.generateAuthToken();
-  }).then((token) => {
-    res.header('x-auth', token).send(user);
-  }).catch((e) => {
-    res.send(e)
-  })
+app.get('/signup', (req,res) => {
+  res.render('signup.hbs')
 })
-
-// app.get('/users/me', authenticate,(req, res) => {
-//   res.status(200).send(req.user)
+//
+// app.post('/signup', (req,res) => {
+//   Users.register(new Users({ email : req.body.email, username: req.body.username}), req.body.password, function(err, user) {
+//    if (err) {
+//      console.log(err)
+//      return res.render('signup.hbs', { user : user });
+//    }
+//
+//    passport.authenticate('local')(req, res, function () {
+//      res.redirect('/dashboard');
+//    });
+//  });
 // })
 
-app.get('/admin', sessionChecker,(req, res) => {
+app.get('/admin', (req, res) => {
   //console.log(req.body)
   res.render('admin.hbs')
 })
 
-app.post('/admin', (req, res) => {
-        let email = req.body.email,
-            password = req.body.password;
-            console.log(email,password)
-        Users.findByCredentials(email, password).then((user) => {
-            if (!user) {
-                res.redirect('/admin');
-            } else {
-                req.session.user = user.dataValues;
-                res.redirect('/dashboard');
-            }
-        }).catch((e) => {res.send(e)});
-    });
+app.post('/admin', (req,res) => {
+  passport.authenticate('local', {failureFlash: true})(req, res, () => {
+    res.redirect('/dashboard')
+  })
+})
 
-app.get('/dashboard', (req,res) => {
-  if (req.session.user && req.cookies.user_sid) {
-      res.render('dashboard.hbs');
-  } else {
-      res.redirect('/admin');
-  }
+app.get('/dashboard', authenticate() ,(req,res) => {
+  res.render('dashboard.hbs', {user: req.user})
  })
 
+app.post('/dashboard', authenticate(), (req,res) => {
+  let months = ['January', 'February', 'March', 'April',
+                'May', 'June', 'July', 'August',
+                'September', 'October', 'November', 'December']
+  let days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  let blog = new Blog({
+    title: req.body.title,
+    body: req.body.body,
+    postedAt: months[new Date().getMonth()] + ' ' + days[new Date().getDay()] + ', ' + new Date().getFullYear(),
+    _author: req.user._id
+  })
+
+  blog.save().then((result) => {
+    res.redirect('/dashboard')
+  }).catch((e) =>{
+    console.log(e)
+     res.redirect('/') })
+})
 
 app.get('/admin/logout', (req, res) => {
-  if (req.session.user && req.cookies.user_sid) {
-       res.clearCookie('user_sid');
-       res.redirect('/dashboard');
-   } else {
-       res.redirect('/admin');
-   }
+  req.logout();
+  res.redirect('/admin');
 })
 
 // create a server to make requests and get back data. Listen to some port.

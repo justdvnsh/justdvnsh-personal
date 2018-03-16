@@ -8,7 +8,7 @@
     <meta name="author" content="">
     <link rel="shortcut icon" href="../../docs-assets/ico/favicon.png">
 
-    <title>STANLEY - Free Bootstrap Theme </title>
+    <title>Divyansh Dwivedi</title>
 
     <!-- Bootstrap core CSS -->
     <link href="assets/css/bootstrap.css" rel="stylesheet">
@@ -18,6 +18,8 @@
     <link href="assets/css/main.css" rel="stylesheet">
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="assets/js/hover.zoom.js"></script>
+    <script src="assets/js/hover.zoom.conf.js"></script>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -37,37 +39,36 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">STANLEY</a>
+          <a class="navbar-brand" href="/">Divyansh</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="work.html">Work</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="blog.html">Blog</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="/work">Work</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/contact">Contact</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
-
 	<!-- +++++ Posts Lists +++++ -->
 	<!-- +++++ First Post +++++ -->
+  {{#each blogs}}
 	<div id="grey">
 	    <div class="container">
 			<div class="row">
 				<div class="col-lg-8 col-lg-offset-2">
 					<p><img src="assets/img/user.png" width="50px" height="50px"> <ba>Stanley Stinson</ba></p>
-					<p><bd>January 18, 2014</bd></p>
-					<h4>The Amazing Spiderman</h4>
-					<p><b>Spider-Man</b> is a fictional character, a comic book superhero that appears in comic books published by Marvel Comics. Created by writer-editor Stan Lee and writer-artist Steve Ditko, he first appeared in Amazing Fantasy #15 (cover-dated Aug. 1962). </p>
-					<p>Lee and Ditko conceived the character as an orphan being raised by his Aunt May and Uncle Ben, and as a teenager, having to deal with the normal struggles of adolescence in addition to those of a costumed crimefighter.</p>
+					<p><bd>{{postedAt}}</bd></p>
+					<h2>{{md title}}</h2>
+					<p>{{md body}}</p>
 					<p><a href="blog01.html">Continue Reading...</a></p>
 				</div>
 
 			</div><!-- /row -->
 	    </div> <!-- /container -->
 	</div><!-- /grey -->
-	
+{{/each}}
 	<!-- +++++ Second Post +++++ -->
 	<div id="white">
 	    <div class="container">
@@ -84,7 +85,7 @@
 			</div><!-- /row -->
 	    </div> <!-- /container -->
 	</div><!-- /white -->
-	
+
 	<!-- +++++ Third Post +++++ -->
 	<div id="grey">
 	    <div class="container">
@@ -99,11 +100,11 @@
 			</div><!-- /row -->
 	    </div> <!-- /container -->
 	</div><!-- /grey -->
-	
-	
-	
+
+
+
 	<!-- +++++ Footer Section +++++ -->
-	
+
 	<div id="footer">
 		<div class="container">
 			<div class="row">
@@ -115,7 +116,7 @@
 						Madrid, Spain.
 					</p>
 				</div><!-- /col-lg-4 -->
-				
+
 				<div class="col-lg-4">
 					<h4>My Links</h4>
 					<p>
@@ -124,21 +125,22 @@
 						<a href="#">Facebook</a>
 					</p>
 				</div><!-- /col-lg-4 -->
-				
+
 				<div class="col-lg-4">
 					<h4>About Stanley</h4>
 					<p>This cute theme was created to showcase your work in a simple way. Use it wisely.</p>
 				</div><!-- /col-lg-4 -->
-			
+
 			</div>
-		
+
 		</div>
 	</div>
-	
+
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="assets/js/bootstrap.min.js"></script>
+    <script src="scripts/markdown.js"></script>
   </body>
 </html>

@@ -14,12 +14,19 @@
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
+    "express-hbs": "^1.0.4",
     "express-session": "^1.15.6",
     "hbs": "^4.0.1",
     "jsonwebtoken": "^8.2.0",
     "lodash": "^4.17.5",
+    "markdown": "^0.5.0",
+    "markdown-it": "^8.4.1",
     "mongodb": "^3.0.4",
     "mongoose": "^5.0.10",
+    "pagedown-editor": "0.0.10",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^5.0.0",
     "validator": "^9.4.1"
   }
 }

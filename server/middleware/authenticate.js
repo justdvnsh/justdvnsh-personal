@@ -1,16 +1,12 @@
-const {Users} = require('./../models/users');
+//const {Users} = require('./../models/users');
 
-let authenticate = (req, res, next) => {
-  let token = req.header('x-auth')
-
-  Users.findByCredentials(req.body.email, req.body.password).then((result) => {
-    if (!result) {
-      return Promise.reject()
+let authenticate = () => {
+  return  (req, res, next) => {
+    if (req.isAuthenticated()) {
+      return next()
     }
-    req.user = result;
-    //req.token = token;
-    next();
-  }).catch((e) => res.send(e))
+    res.redirect('/admin')
+  }
 }
 
 module.exports = {
