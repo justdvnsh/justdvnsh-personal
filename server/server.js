@@ -45,7 +45,7 @@ app.use(cookieParser());
 
 hbs.registerHelper('md', (text) => {
   //let string = hbs.handlebars.Utils.escapeExpression(text)
-  var marked = md.render(text)
+  var marked = markdown.toHTML(text)
   return new hbs.handlebars.SafeString(marked);
 })
 
@@ -85,13 +85,13 @@ app.get('/work', (req, res) => {
 
 
 app.get('/blog',(req, res) => {
-  Blog.find({}).sort({postedAt: 'desc'}).then((result) => {
+  Blog.find({$query: {},  $orderby: { postedAt: -1 }}).then((result) => {
     console.log(result[0])
     let blogs = []
     for (let i in result) {
-      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt});
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
     }
-    console.log(blogs)
+    //console.log(blogs)
     res.render('blog.hbs', {blogs: blogs, md: md})
   }).catch((e) => {
     console.log(e)
@@ -99,6 +99,14 @@ app.get('/blog',(req, res) => {
   })
 
 });
+
+app.get('/blog/:id', (req,res) => {
+  Blog.findOne({_id: req.params.id}).then((result) => {
+    console.log('Found-->', result)
+    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, md: md})
+    console.log(req.params)
+  })
+})
 
 app.get('/contact',(req, res) => {
   res.render('contact.hbs')

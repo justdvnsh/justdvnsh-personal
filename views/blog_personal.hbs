@@ -11,11 +11,11 @@
     <title>Divyansh Dwivedi</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="/assets/css/bootstrap.css" rel="stylesheet">
 
 
     <!-- Custom styles for this template -->
-    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="/assets/css/main.css" rel="stylesheet">
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="assets/js/hover.zoom.js"></script>
@@ -51,67 +51,68 @@
         </div><!--/.nav-collapse -->
       </div>
     </div>
-	<!-- +++++ Posts Lists +++++ -->
-	<!-- +++++ First Post +++++ -->
-  {{#each blogs}}
-	<div id="grey">
+
+
+	<!-- +++++ Post +++++ -->
+	<div id="white">
 	    <div class="container">
 			<div class="row">
 				<div class="col-lg-8 col-lg-offset-2">
-					<p><img src="assets/img/user.png" width="50px" height="50px"> <ba>Divyansh Dwivedi</ba></p>
+					<p><img src="/assets/img/user.png" width="50px" height="50px"> <ba>Divyansh Dwivedi</ba></p>
 					<p><bd>{{postedAt}}</bd></p>
-					<h1>{{md title}}</h1>
-					<p id='body'>{{md body}}</p>
-					<p><a href="/blog/{{id}}">Continue Reading...</a></p>
+					<h4>{{md title}}</h4>
+					<p><img class="img-responsive" src="assets/img/blog01.jpg" alt=""></p>
+					<p>{{md body}}</p>
+					<br>
+					<p><bt>TAGS: <a href="#">Wordpress</a> - <a href="#">Web Design</a></bt></p>
+					<hr>
+					<p><a href="/blog"># Back</a></p>
 				</div>
 
 			</div><!-- /row -->
 	    </div> <!-- /container -->
-	</div><!-- /grey -->
-{{/each}}
-
-	<!-- +++++ Footer Section +++++ -->
-
-	<div id="footer">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-4">
-					<h4>My Bunker</h4>
-					<p>
-						116/18 B Rawatpur, Kanpur<br/>
-						+91 8563009521, <br/>
-						Uttar Pradesh, India.
-					</p>
-				</div><!-- /col-lg-4 -->
-
-				<div class="col-lg-4">
-					<h4>My Links</h4>
-					<p>
-						<a href="https://github.com/justdvnsh">Github</a><br/>
-						<a href="https://twitter.com/justdvnsh2208">Twitter</a><br/>
-						<a href="https://facebook.com/justdvnsh2208">Facebook</a>
-					</p>
-				</div><!-- /col-lg-4 -->
-
-				<div class="col-lg-4">
-					<h4>About Divyansh</h4>
-					<p>This cute website was created to showcase my work in a simple way. </p>
-				</div><!-- /col-lg-4 -->
-
-			</div>
-
-		</div>
-	</div>
+	</div><!-- /white -->
 
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script src="scripts/markdown.js"></script>
-    <script>
-      let body = document.getElementById('body').value
-      console.log(body)
-    </script>
-  </body>
-</html>
+
+
+  	<!-- +++++ Footer Section +++++ -->
+
+  	<div id="footer">
+  		<div class="container">
+  			<div class="row">
+  				<div class="col-lg-4">
+  					<h4>My Bunker</h4>
+  					<p>
+  						116/18 B Rawatpur, Kanpur<br/>
+  						+91 8563009521, <br/>
+  						Uttar Pradesh, India.
+  					</p>
+  				</div><!-- /col-lg-4 -->
+
+  				<div class="col-lg-4">
+  					<h4>My Links</h4>
+  					<p>
+  						<a href="https://github.com/justdvnsh">Github</a><br/>
+  						<a href="https://twitter.com/justdvnsh2208">Twitter</a><br/>
+  						<a href="https://facebook.com/justdvnsh2208">Facebook</a>
+  					</p>
+  				</div><!-- /col-lg-4 -->
+
+  				<div class="col-lg-4">
+  					<h4>About Divyansh</h4>
+  					<p>This cute website was created to showcase my work in a simple way. </p>
+  				</div><!-- /col-lg-4 -->
+
+  			</div>
+
+  		</div>
+  	</div>
+
+      <!-- Bootstrap core JavaScript
+      ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <script src="assets/js/bootstrap.min.js"></script>
+      <script src="scripts/markdown.js"></script>
+    </body>
+  </html>
