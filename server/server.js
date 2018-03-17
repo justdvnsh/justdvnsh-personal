@@ -10,7 +10,9 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const markdown = require('markdown').markdown;
 const markdownIt = require('markdown-it')
-// //const fs = require('fs');
+const ObjectID = require("mongoose").mongo.ObjectID
+const fs = require('fs');
+//const mongoose = require('mongoose').mongo.ObjectID
 // const editor = require("pagedown-editor");
 //
 // function getPagedownEditor() {
@@ -49,6 +51,7 @@ hbs.registerHelper('md', (text) => {
   return new hbs.handlebars.SafeString(marked);
 })
 
+
 // initialize express-session to allow us track the logged-in user across sessions.
 app.use(session({
     key: 'user_sid',
@@ -85,7 +88,7 @@ app.get('/work', (req, res) => {
 
 
 app.get('/blog',(req, res) => {
-  Blog.find({$query: {},  $orderby: { postedAt: -1 }}).then((result) => {
+  Blog.find({}).sort('-postedAt').then((result) => {
     console.log(result[0])
     let blogs = []
     for (let i in result) {
@@ -103,7 +106,9 @@ app.get('/blog',(req, res) => {
 app.get('/blog/:id', (req,res) => {
   Blog.findOne({_id: req.params.id}).then((result) => {
     console.log('Found-->', result)
-    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, md: md})
+    let blog = {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id }
+    //let blog = JSON.stringify(blog)
+    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, md: md, data: JSON.stringify(blog) })
     console.log(req.params)
   })
 })
@@ -112,22 +117,6 @@ app.get('/contact',(req, res) => {
   res.render('contact.hbs')
 });
 
-app.get('/signup', (req,res) => {
-  res.render('signup.hbs')
-})
-//
-// app.post('/signup', (req,res) => {
-//   Users.register(new Users({ email : req.body.email, username: req.body.username}), req.body.password, function(err, user) {
-//    if (err) {
-//      console.log(err)
-//      return res.render('signup.hbs', { user : user });
-//    }
-//
-//    passport.authenticate('local')(req, res, function () {
-//      res.redirect('/dashboard');
-//    });
-//  });
-// })
 
 app.get('/admin', (req, res) => {
   //console.log(req.body)
@@ -142,6 +131,7 @@ app.post('/admin', (req,res) => {
 
 app.get('/dashboard', authenticate() ,(req,res) => {
   res.render('dashboard.hbs', {user: req.user})
+  console.log(req.user)
  })
 
 app.post('/dashboard', authenticate(), (req,res) => {
@@ -162,6 +152,29 @@ app.post('/dashboard', authenticate(), (req,res) => {
     console.log(e)
      res.redirect('/') })
 })
+
+app.get('/dashboard/:id/:data', authenticate() ,(req,res) => {
+  let data = JSON.parse(req.params.data)
+  console.log('dashboard-data',data)
+  console.log('data...(********)', data.title, data.body)
+  res.render('dashboard-edit.hbs', {title: data.title, body: data.body})
+  //console.log('dashboard',req.body)
+  //console.log('dashboard', req.params);
+ })
+
+app.post('/dashboard/:id/:data', authenticate(), (req,res) => {
+  Blog.findByIdAndUpdate(req.params.id, {$set:
+                                              {title: req.body.title,
+                                               body: req.body.body}
+                                        }).then((result) => {
+    result.save().then((result) => {
+      res.redirect('/blog')
+    })
+  }).catch((e) =>{
+    console.log(e)
+     res.redirect('/') })
+})
+
 
 app.get('/admin/logout', (req, res) => {
   req.logout();
