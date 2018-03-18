@@ -88,7 +88,7 @@ app.get('/work', (req, res) => {
 
 
 app.get('/blog',(req, res) => {
-  Blog.find({}).sort('-postedAt').then((result) => {
+  Blog.find({}).sort('-postedAt').limit(5).then((result) => {
     console.log(result[0])
     let blogs = []
     for (let i in result) {
@@ -104,14 +104,41 @@ app.get('/blog',(req, res) => {
 });
 
 app.get('/blog/:id', (req,res) => {
+  console.log(req.isAuthenticated())
   Blog.findOne({_id: req.params.id}).then((result) => {
     console.log('Found-->', result)
-    let blog = {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id }
-    //let blog = JSON.stringify(blog)
-    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, md: md, data: JSON.stringify(blog) })
+    // let blogs = {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id }
+    // let blog = JSON.stringify(blogs, undefined, 4)
+    // console.log('blog....123123131313****',blog)
+    let user,url;
+    if (req.isAuthenticated() === true){
+      user = 'Edit'
+      url = `dashboard/${result._id}`
+    } else {
+      user = 'Improve This Post...!'
+      url = 'contact'
+    }
+    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user, url , md })
     console.log(req.params)
   })
 })
+
+
+app.get('/blogs/all',(req, res) => {
+  Blog.find({}).sort('-postedAt').then((result) => {
+    console.log(result[0])
+    let blogs = []
+    for (let i in result) {
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
+    }
+    //console.log(blogs)
+    res.render('blogs.hbs', {blogs: blogs, md: md})
+  }).catch((e) => {
+    console.log(e)
+    res.send({e})
+  })
+
+});
 
 app.get('/contact',(req, res) => {
   res.render('contact.hbs')
@@ -142,7 +169,7 @@ app.post('/dashboard', authenticate(), (req,res) => {
   let blog = new Blog({
     title: req.body.title,
     body: req.body.body,
-    postedAt: months[new Date().getMonth()] + ' ' + days[new Date().getDay()] + ', ' + new Date().getFullYear(),
+    postedAt: new Date(),
     _author: req.user._id
   })
 
@@ -153,16 +180,18 @@ app.post('/dashboard', authenticate(), (req,res) => {
      res.redirect('/') })
 })
 
-app.get('/dashboard/:id/:data', authenticate() ,(req,res) => {
-  let data = JSON.parse(req.params.data)
-  console.log('dashboard-data',data)
-  console.log('data...(********)', data.title, data.body)
-  res.render('dashboard-edit.hbs', {title: data.title, body: data.body})
+app.get('/dashboard/:id', authenticate() ,(req,res) => {
+  Blog.findById(req.params.id).then((result) => {
+    res.render('dashboard-edit.hbs', {title: result.title, body: result.body})
+  }).catch((e) => {
+    console.log(e);
+    res.redirect('/')
+  })
   //console.log('dashboard',req.body)
   //console.log('dashboard', req.params);
  })
 
-app.post('/dashboard/:id/:data', authenticate(), (req,res) => {
+app.post('/dashboard/:id', authenticate(), (req,res) => {
   Blog.findByIdAndUpdate(req.params.id, {$set:
                                               {title: req.body.title,
                                                body: req.body.body}
