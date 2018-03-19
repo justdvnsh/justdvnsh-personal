@@ -100,7 +100,10 @@
     					<p><img src="/assets/img/user.png" width="50px" height="50px"> <ba>Divyansh Dwivedi</ba></p>
     					<p><bd>{{postedAt}}</bd></p>
     					<h1>{{md title}}</h1>
-    					<!--<p id='body'>{{md body}}</p>-->
+              <bt style=' font-size:14px'>TAGS: &nbsp&nbsp<label>
+                {{#each tags}}
+                  <span class='badges'><a href="#">{{tag}}</a></span>
+                {{/each}}</label></bt><br><br>
     					<p><a href="/blog/{{id}}">Continue Reading...</a></p>
               <hr><br>
               {{/each}}

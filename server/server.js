@@ -90,11 +90,16 @@ app.get('/work', (req, res) => {
 app.get('/blog',(req, res) => {
   Blog.find({published: true}).sort('-postedAt').limit(5).then((result) => {
     console.log(result[0])
+    let tags = []
     let blogs = []
     for (let i in result) {
-      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
+      let tags = []
+      result[i].tags.forEach((tag) => {
+        tags.push({tag})
+      })
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id, tags});
     }
-    res.render('blog.hbs', {blogs: blogs})
+    res.render('blog.hbs', {blogs, tags})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -112,7 +117,13 @@ app.get('/blog/:id', (req,res) => {
       user = 'Improve This Post...!'
       url = 'contact'
     }
-    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user, url })
+    console.log('tags-->', result.tags)
+    let tags = []
+    result.tags.forEach((tag) => {
+      tags.push({tag})
+    })
+    console.log(tags)
+    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, tags , user, url })
   })
 })
 
@@ -120,11 +131,17 @@ app.get('/blog/:id', (req,res) => {
 app.get('/blogs/all',(req, res) => {
   Blog.find({published: true}).sort('-postedAt').then((result) => {
     console.log(result[0])
+    // let tags = []
     let blogs = []
     for (let i in result) {
-      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
+      let tags = []
+      result[i].tags.forEach((tag) => {
+        tags.push({tag})
+      })
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id, tags});
+      console.log(blogs)
     }
-    res.render('blogs.hbs', {blogs: blogs})
+    res.render('blogs.hbs', {blogs})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -135,11 +152,15 @@ app.get('/blogs/all',(req, res) => {
 app.get('/drafts', authenticate() ,(req, res) => {
   Blog.find({published: false}).sort('-postedAt').then((result) => {
     console.log(result[0])
+    let tags = []
     let blogs = []
     for (let i in result) {
+      result[i].tags.forEach((tag) => {
+        tags.push({tag})
+      })
       blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
     }
-    res.render('drafts.hbs', {blogs: blogs})
+    res.render('drafts.hbs', {blogs, tags})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -156,7 +177,11 @@ app.get('/drafts/:id', authenticate(), (req, res) => {
     } else {
       user = false
     }
-    res.render('draft-personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user })
+    let tags = []
+    result.tags.forEach((tag) => {
+      tags.push({tag})
+    })
+    res.render('draft-personal.hbs', {tags, title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user })
   })
 })
 
@@ -198,12 +223,15 @@ app.get('/dashboard', authenticate() ,(req,res) => {
  })
 
 app.post('/dashboard', authenticate(), (req,res) => {
+  let tags = req.body.tags.split(',')
+  console.log(req.body.tags.split(','))
   let blog = new Blog({
     title: req.body.title,
     body: req.body.body,
     postedAt: new Date(),
     _author: req.user._id,
-    published: true
+    published: true,
+    tags
   })
 
   blog.save().then((result) => {

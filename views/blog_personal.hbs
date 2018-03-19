@@ -65,8 +65,11 @@
 					<p>{{md body}}</p>
 					<br><br>
             <p>
-              <bt style=' font-size:14px'>TAGS: &nbsp&nbsp<label><span class='badges'><a href="#">Web Design</a></span></label></bt>
-              <a href='/{{url}}'><button class='btn btn-sm btn-info' style='margin-right: 0px; margin-left: 460px'>{{user}}</button></a>
+              <bt style=' font-size:14px'>TAGS: &nbsp&nbsp<label>
+                {{#each tags}}
+                  <span class='badges'><a href="#">{{tag}}</a></span>
+                {{/each}}</label></bt>
+              <a href='/{{url}}'><button class='btn btn-sm btn-info' style='margin-right: 0px; margin-left: 400px'>{{user}}</button></a>
             </p>
 
 					<hr>

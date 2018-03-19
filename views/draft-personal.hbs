@@ -73,7 +73,10 @@
 					<p>{{md body}}</p>
 					<br><br>
             <p>
-              <bt style=' font-size:14px'>TAGS: &nbsp&nbsp<label><span class='badges'><a href="#">Web Design</a></span></label></bt>
+              <bt style=' font-size:14px'>TAGS: &nbsp&nbsp<label>
+                {{#each tags}}
+                  <span class='badges'><a href="#">{{tag}}</a></span>
+                {{/each}}</label></bt>
               <a href='/drafts/publish/{{id}}'><button class='btn btn-sm btn-info' style='margin-right: 0px; margin-left: 475px'>Publish</button></a>
               <a href='/dashboard/drafts/{{id}}'><button class='btn btn-sm btn-success' style='margin-right: 0px; margin-left: 10px'>Edit</button></a>
 
