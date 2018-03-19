@@ -53,6 +53,14 @@
     </div>
 
   <div class="container pt">
+    {{#if user}}
+    <div class='panel'>
+      <div class='panel-body'>
+          {{> sidebar}}
+      </div>
+
+    </div>
+    {{/if}}
 		<div class="row mt">
 			<div class="col-lg-6 col-lg-offset-3 centered">
 				<h3>Blog Post</h3>
@@ -76,8 +84,9 @@
 				    <div id="preview"> </div>
 				    <br>
 				  </div>
-				  <button type="submit" class="btn btn-success">SUBMIT</button>
+				  <button type="submit" class="btn btn-success">Publish</button>
 				</form>
+
 			</div>
 		</div><!-- /row -->
 	</div><!-- /container -->

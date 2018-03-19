@@ -30,7 +30,8 @@ const port = process.env.PORT;
 
 var app = express(); // to intiate the express function.
 var md = new markdownIt();
-//hbs.registerPartials(__dirname + '/views/partials')
+var sidebar = fs.readFileSync(__dirname + '/../views/partials/sidebar.hbs', 'utf8');
+hbs.registerPartial('sidebar', sidebar)
 // use the tempalating engine.
 //app.set('view engine', 'hbs');
 
@@ -88,7 +89,7 @@ app.get('/work', (req, res) => {
 
 
 app.get('/blog',(req, res) => {
-  Blog.find({}).sort('-postedAt').limit(5).then((result) => {
+  Blog.find({published: true}).sort('-postedAt').limit(5).then((result) => {
     console.log(result[0])
     let blogs = []
     for (let i in result) {
@@ -105,7 +106,7 @@ app.get('/blog',(req, res) => {
 
 app.get('/blog/:id', (req,res) => {
   console.log(req.isAuthenticated())
-  Blog.findOne({_id: req.params.id}).then((result) => {
+  Blog.findOne({_id: req.params.id, published: true}).then((result) => {
     console.log('Found-->', result)
     // let blogs = {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id }
     // let blog = JSON.stringify(blogs, undefined, 4)
@@ -125,7 +126,7 @@ app.get('/blog/:id', (req,res) => {
 
 
 app.get('/blogs/all',(req, res) => {
-  Blog.find({}).sort('-postedAt').then((result) => {
+  Blog.find({published: true}).sort('-postedAt').then((result) => {
     console.log(result[0])
     let blogs = []
     for (let i in result) {
@@ -139,6 +140,49 @@ app.get('/blogs/all',(req, res) => {
   })
 
 });
+
+app.get('/drafts', authenticate() ,(req, res) => {
+  Blog.find({published: false}).sort('-postedAt').then((result) => {
+    console.log(result[0])
+    let blogs = []
+    for (let i in result) {
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
+    }
+    //console.log(blogs)
+    res.render('drafts.hbs', {blogs: blogs, md: md})
+  }).catch((e) => {
+    console.log(e)
+    res.send({e})
+  })
+
+});
+
+app.get('/drafts/:id', authenticate(), (req, res) => {
+  console.log(req.isAuthenticated())
+  Blog.findOne({_id: req.params.id, published: false}).then((result) => {
+    console.log('Found-->', result)
+    let user;
+    if (req.isAuthenticated()){
+      user = true
+    } else {
+      user = false
+    }
+    res.render('draft-personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user ,md })
+    console.log(req.params)
+  })
+})
+
+app.get('/drafts/publish/:id', authenticate(), (req, res) => {
+  Blog.findByIdAndUpdate(req.params.id, {$set:
+                                              {published: true,
+                                              postedAt: new Date()}
+                                        }).then((result) => {
+        res.redirect('/blog')
+      }).catch((e) => {
+        console.log(e)
+        res.redirect('/')
+      })
+})
 
 app.get('/contact',(req, res) => {
   res.render('contact.hbs')
@@ -157,24 +201,53 @@ app.post('/admin', (req,res) => {
 })
 
 app.get('/dashboard', authenticate() ,(req,res) => {
-  res.render('dashboard.hbs', {user: req.user})
+  let user;
+  if (req.isAuthenticated()){
+    user = true
+  } else {
+    user = false
+  }
+  res.render('dashboard.hbs', {user})
   console.log(req.user)
  })
 
 app.post('/dashboard', authenticate(), (req,res) => {
-  let months = ['January', 'February', 'March', 'April',
-                'May', 'June', 'July', 'August',
-                'September', 'October', 'November', 'December']
-  let days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   let blog = new Blog({
     title: req.body.title,
     body: req.body.body,
     postedAt: new Date(),
-    _author: req.user._id
+    _author: req.user._id,
+    published: true
   })
 
   blog.save().then((result) => {
     res.redirect('/dashboard')
+  }).catch((e) =>{
+    console.log(e)
+     res.redirect('/') })
+})
+
+app.get('/dashboard/drafts', authenticate() ,(req,res) => {
+  let user;
+  if (req.isAuthenticated()){
+    user = true
+  } else {
+    user = false
+  }
+  res.render('dashboard-drafts.hbs', {user})
+ })
+
+app.post('/dashboard/drafts', authenticate(), (req,res) => {
+  let blog = new Blog({
+    title: req.body.title,
+    body: req.body.body,
+    postedAt: new Date(),
+    _author: req.user._id,
+    published: false
+  })
+
+  blog.save().then((result) => {
+    res.redirect('/dashboard/drafts')
   }).catch((e) =>{
     console.log(e)
      res.redirect('/') })
@@ -204,6 +277,31 @@ app.post('/dashboard/:id', authenticate(), (req,res) => {
      res.redirect('/') })
 })
 
+
+app.get('/dashboard/drafts/:id', authenticate() ,(req,res) => {
+  Blog.findById(req.params.id).then((result) => {
+    res.render('dashboard-drafts-edit.hbs', {title: result.title, body: result.body})
+  }).catch((e) => {
+    console.log(e);
+    res.redirect('/')
+  })
+  //console.log('dashboard',req.body)
+  //console.log('dashboard', req.params);
+ })
+
+app.post('/dashboard/drafts/:id', authenticate(), (req,res) => {
+  Blog.findByIdAndUpdate(req.params.id, {$set:
+                                              {title: req.body.title,
+                                               body: req.body.body,
+                                               postedAt: new Date()}
+                                        }).then((result) => {
+    result.save().then((result) => {
+      res.redirect('/drafts')
+    })
+  }).catch((e) =>{
+    console.log(e)
+     res.redirect('/') })
+})
 
 app.get('/admin/logout', (req, res) => {
   req.logout();

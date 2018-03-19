@@ -53,9 +53,17 @@
     </div>
 
   <div class="container pt">
+    {{#if user}}
+    <div class='panel'>
+      <div class='panel-body'>
+          {{> sidebar}}
+      </div>
+
+    </div>
+    {{/if}}
 		<div class="row mt">
 			<div class="col-lg-6 col-lg-offset-3 centered">
-				<h3>Blog Post</h3>
+				<h3>Draft Post</h3>
 				<hr>
 				<p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.</p>
 			</div>
@@ -64,20 +72,21 @@
 			<div class="col-lg-8 col-lg-offset-2">
 				<form method="post" action="">
           <div class="form-group">
-				    <input type="text"  oninput="this.editor.update()" class="form-control" name = 'title' id="subjectEmail1" value="{{title}}">
+				    <input type="text"  oninput="this.editor.update()" class="form-control" name = 'title' id="subjectEmail1" placeholder="Title">
 				    <br>
 				  </div>
           <div class="form-group">
             <textarea id="text-input" oninput="this.editor.update()"
-                         class="form-control" name='body'>{{body}}</textarea>
+                         class="form-control" name='body'>Type **Blog** here.</textarea>
 				    <br>
 				  </div>
 				  <div class="form-group">
 				    <div id="preview"> </div>
 				    <br>
 				  </div>
-				  <button type="submit" class="btn btn-success">Publish</button>
+				  <button type="submit" class="btn btn-warning">Save To Drafts</button>
 				</form>
+
 			</div>
 		</div><!-- /row -->
 	</div><!-- /container -->

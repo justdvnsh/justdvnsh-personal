@@ -21,7 +21,11 @@ let Blog = mongoose.model('Blog', {
     type: mongoose.Schema.Types.ObjectId,
     required: true
   },
-  tags: [String]
+  tags: [String],
+  published: {
+    type: Boolean,
+    default: false
+  }
 });
 
 module.exports = {
