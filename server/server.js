@@ -8,18 +8,9 @@ const passport = require('passport');
 const localStrategy = require('passport-local').Strategy
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const markdown = require('markdown').markdown;
-const markdownIt = require('markdown-it')
+const marked = require('marked')
 const ObjectID = require("mongoose").mongo.ObjectID
 const fs = require('fs');
-//const mongoose = require('mongoose').mongo.ObjectID
-// const editor = require("pagedown-editor");
-//
-// function getPagedownEditor() {
-//     return editor.getPagedownEditor();
-// }
-//
-// global.window.getPagedownEditor = getPagedownEditor;
 
 const {mongoose} = require('./db/mongoose');
 let {Blog} = require('./models/blog')
@@ -29,11 +20,21 @@ let {authenticate} = require('./middleware/authenticate')
 const port = process.env.PORT;
 
 var app = express(); // to intiate the express function.
-var md = new markdownIt();
+
+marked.setOptions({
+  renderer: new marked.Renderer(),
+  gfm: true,
+  tables: true,
+  breaks: true,
+  pedantic: true,
+  sanitize: true,
+  smartLists: true,
+  smartypants: false,
+  xhtml: false
+});
 var sidebar = fs.readFileSync(__dirname + '/../views/partials/sidebar.hbs', 'utf8');
 hbs.registerPartial('sidebar', sidebar)
-// use the tempalating engine.
-//app.set('view engine', 'hbs');
+
 
 /*
   * The middlewares are rendered in the order they get defined.
@@ -48,8 +49,8 @@ app.use(cookieParser());
 
 hbs.registerHelper('md', (text) => {
   //let string = hbs.handlebars.Utils.escapeExpression(text)
-  var marked = markdown.toHTML(text)
-  return new hbs.handlebars.SafeString(marked);
+  var markedHTML = marked(text)
+  return new hbs.handlebars.SafeString(markedHTML);
 })
 
 
@@ -70,9 +71,7 @@ passport.deserializeUser(Users.deserializeUser());
 
 // use express middleware.
 app.use(express.static(__dirname + '/public'));
-app.use('/scripts', express.static(__dirname + '/../node_modules/markdown/lib'));
-
-
+app.use('/scripts', express.static(__dirname + '/../node_modules/marked/lib'));
 
 // get the response from the server.
 app.get('/', (req, res) => {
@@ -95,8 +94,7 @@ app.get('/blog',(req, res) => {
     for (let i in result) {
       blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
     }
-    //console.log(blogs)
-    res.render('blog.hbs', {blogs: blogs, md: md})
+    res.render('blog.hbs', {blogs: blogs})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -105,12 +103,7 @@ app.get('/blog',(req, res) => {
 });
 
 app.get('/blog/:id', (req,res) => {
-  console.log(req.isAuthenticated())
   Blog.findOne({_id: req.params.id, published: true}).then((result) => {
-    console.log('Found-->', result)
-    // let blogs = {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id }
-    // let blog = JSON.stringify(blogs, undefined, 4)
-    // console.log('blog....123123131313****',blog)
     let user,url;
     if (req.isAuthenticated() === true){
       user = 'Edit'
@@ -119,8 +112,7 @@ app.get('/blog/:id', (req,res) => {
       user = 'Improve This Post...!'
       url = 'contact'
     }
-    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user, url , md })
-    console.log(req.params)
+    res.render('blog_personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user, url })
   })
 })
 
@@ -132,8 +124,7 @@ app.get('/blogs/all',(req, res) => {
     for (let i in result) {
       blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
     }
-    //console.log(blogs)
-    res.render('blogs.hbs', {blogs: blogs, md: md})
+    res.render('blogs.hbs', {blogs: blogs})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -148,8 +139,7 @@ app.get('/drafts', authenticate() ,(req, res) => {
     for (let i in result) {
       blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
     }
-    //console.log(blogs)
-    res.render('drafts.hbs', {blogs: blogs, md: md})
+    res.render('drafts.hbs', {blogs: blogs})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -158,7 +148,6 @@ app.get('/drafts', authenticate() ,(req, res) => {
 });
 
 app.get('/drafts/:id', authenticate(), (req, res) => {
-  console.log(req.isAuthenticated())
   Blog.findOne({_id: req.params.id, published: false}).then((result) => {
     console.log('Found-->', result)
     let user;
@@ -167,8 +156,7 @@ app.get('/drafts/:id', authenticate(), (req, res) => {
     } else {
       user = false
     }
-    res.render('draft-personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user ,md })
-    console.log(req.params)
+    res.render('draft-personal.hbs', {title: result.title, body: result.body, postedAt: result.postedAt, id: result._id, user })
   })
 })
 
@@ -190,7 +178,6 @@ app.get('/contact',(req, res) => {
 
 
 app.get('/admin', (req, res) => {
-  //console.log(req.body)
   res.render('admin.hbs')
 })
 
@@ -208,7 +195,6 @@ app.get('/dashboard', authenticate() ,(req,res) => {
     user = false
   }
   res.render('dashboard.hbs', {user})
-  console.log(req.user)
  })
 
 app.post('/dashboard', authenticate(), (req,res) => {
@@ -260,8 +246,6 @@ app.get('/dashboard/:id', authenticate() ,(req,res) => {
     console.log(e);
     res.redirect('/')
   })
-  //console.log('dashboard',req.body)
-  //console.log('dashboard', req.params);
  })
 
 app.post('/dashboard/:id', authenticate(), (req,res) => {
@@ -285,8 +269,6 @@ app.get('/dashboard/drafts/:id', authenticate() ,(req,res) => {
     console.log(e);
     res.redirect('/')
   })
-  //console.log('dashboard',req.body)
-  //console.log('dashboard', req.params);
  })
 
 app.post('/dashboard/drafts/:id', authenticate(), (req,res) => {

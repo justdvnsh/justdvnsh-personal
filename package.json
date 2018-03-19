@@ -21,6 +21,7 @@
     "lodash": "^4.17.5",
     "markdown": "^0.5.0",
     "markdown-it": "^8.4.1",
+    "marked": "^0.3.17",
     "mongodb": "^3.0.4",
     "mongoose": "^5.0.10",
     "pagedown-editor": "0.0.10",

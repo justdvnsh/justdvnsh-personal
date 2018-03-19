@@ -88,11 +88,11 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/assets/js/bootstrap.min.js"></script>
-    <script src="/scripts/markdown.js"></script>
+    <script src="/scripts/marked.js"></script>
     <script>
      function Editor(input, preview) {
        this.update = function () {
-         preview.innerHTML = markdown.toHTML(input.value);
+         preview.innerHTML = marked(input.value);
        };
        input.editor = this;
        this.update();
@@ -102,7 +102,7 @@
    </script><script>
     function Editor(input, preview) {
       this.update = function () {
-        preview.innerHTML = markdown.toHTML(input.value);
+        preview.innerHTML = marked(input.value);
       };
       input.editor = this;
       this.update();
