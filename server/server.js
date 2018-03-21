@@ -138,8 +138,9 @@ app.get('/blogs/all',(req, res) => {
       result[i].tags.forEach((tag) => {
         tags.push({tag})
       })
+      //console.log('tags..._.',tags)
       blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id, tags});
-      console.log(blogs)
+      //console.log(blogs)
     }
     res.render('blogs.hbs', {blogs})
   }).catch((e) => {
@@ -151,16 +152,16 @@ app.get('/blogs/all',(req, res) => {
 
 app.get('/drafts', authenticate() ,(req, res) => {
   Blog.find({published: false}).sort('-postedAt').then((result) => {
-    console.log(result[0])
-    let tags = []
+    //console.log(result[0])
     let blogs = []
     for (let i in result) {
+      let tags = []
       result[i].tags.forEach((tag) => {
         tags.push({tag})
       })
-      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id});
+      blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id, tags});
     }
-    res.render('drafts.hbs', {blogs, tags})
+    res.render('drafts.hbs', {blogs})
   }).catch((e) => {
     console.log(e)
     res.send({e})
@@ -170,7 +171,7 @@ app.get('/drafts', authenticate() ,(req, res) => {
 
 app.get('/drafts/:id', authenticate(), (req, res) => {
   Blog.findOne({_id: req.params.id, published: false}).then((result) => {
-    console.log('Found-->', result)
+    //console.log('Found-->', result)
     let user;
     if (req.isAuthenticated()){
       user = true
@@ -224,7 +225,8 @@ app.get('/dashboard', authenticate() ,(req,res) => {
 
 app.post('/dashboard', authenticate(), (req,res) => {
   let tags = req.body.tags.split(',')
-  console.log(req.body.tags.split(','))
+  console.log('dashboard--Tags', tags)
+  //console.log(req.body.tags.split(','))
   let blog = new Blog({
     title: req.body.title,
     body: req.body.body,
@@ -279,10 +281,11 @@ app.get('/dashboard/:id', authenticate() ,(req,res) => {
  })
 
 app.post('/dashboard/:id', authenticate(), (req,res) => {
+  let tags = req.body.tags.split(',')
   Blog.findByIdAndUpdate(req.params.id, {$set:
                                               {title: req.body.title,
                                                body: req.body.body,
-                                                tags: req.body.tags}
+                                                tags}
                                         }).then((result) => {
     result.save().then((result) => {
       res.redirect('/blog')
@@ -295,7 +298,7 @@ app.post('/dashboard/:id', authenticate(), (req,res) => {
 
 app.get('/dashboard/drafts/:id', authenticate() ,(req,res) => {
   Blog.findById(req.params.id).then((result) => {
-    res.render('dashboard-drafts-edit.hbs', {title: result.title, body: result.body})
+    res.render('dashboard-drafts-edit.hbs', {title: result.title, body: result.body, tags: result.tags})
   }).catch((e) => {
     console.log(e);
     res.redirect('/')
@@ -303,11 +306,12 @@ app.get('/dashboard/drafts/:id', authenticate() ,(req,res) => {
  })
 
 app.post('/dashboard/drafts/:id', authenticate(), (req,res) => {
+  let tags = req.body.tags.split(',')
   Blog.findByIdAndUpdate(req.params.id, {$set:
                                               {title: req.body.title,
                                                body: req.body.body,
                                                postedAt: new Date(),
-                                             tags: req.body.tags}
+                                             tags}
                                         }).then((result) => {
     result.save().then((result) => {
       res.redirect('/drafts')
