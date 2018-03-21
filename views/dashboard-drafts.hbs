@@ -76,6 +76,10 @@
 				    <br>
 				  </div>
           <div class="form-group">
+            <input type="text"  oninput="this.editor.update()" class="form-control" name = 'tags' id="exampleInputEmail1" placeholder="Tags">
+            <br>
+          </div>
+          <div class="form-group">
             <textarea id="text-input" oninput="this.editor.update()"
                          class="form-control" name='body'>Type **Blog** here.</textarea>
 				    <br>
@@ -118,6 +122,16 @@
     }
     var $ = function (id) { return document.getElementById(id); };
     new Editor($("subjectEmail1"), $("preview"));
-  </script>
+  </script><script>
+   function Editor(input, preview) {
+     this.update = function () {
+       preview.innerHTML = marked(input.value);
+     };
+     input.editor = this;
+     this.update();
+   }
+   var $ = function (id) { return document.getElementById(id); };
+   new Editor($("exampleInputEmail1"), $("preview"));
+ </script>
   </body>
 </html>

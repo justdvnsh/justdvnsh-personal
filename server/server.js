@@ -252,12 +252,14 @@ app.get('/dashboard/drafts', authenticate() ,(req,res) => {
  })
 
 app.post('/dashboard/drafts', authenticate(), (req,res) => {
+  let tags = req.body.tags.split(',')
   let blog = new Blog({
     title: req.body.title,
     body: req.body.body,
     postedAt: new Date(),
     _author: req.user._id,
-    published: false
+    published: false,
+    tags
   })
 
   blog.save().then((result) => {
@@ -269,7 +271,7 @@ app.post('/dashboard/drafts', authenticate(), (req,res) => {
 
 app.get('/dashboard/:id', authenticate() ,(req,res) => {
   Blog.findById(req.params.id).then((result) => {
-    res.render('dashboard-edit.hbs', {title: result.title, body: result.body})
+    res.render('dashboard-edit.hbs', {title: result.title, body: result.body, tags: result.tags})
   }).catch((e) => {
     console.log(e);
     res.redirect('/')
@@ -279,7 +281,8 @@ app.get('/dashboard/:id', authenticate() ,(req,res) => {
 app.post('/dashboard/:id', authenticate(), (req,res) => {
   Blog.findByIdAndUpdate(req.params.id, {$set:
                                               {title: req.body.title,
-                                               body: req.body.body}
+                                               body: req.body.body,
+                                                tags: req.body.tags}
                                         }).then((result) => {
     result.save().then((result) => {
       res.redirect('/blog')
@@ -303,7 +306,8 @@ app.post('/dashboard/drafts/:id', authenticate(), (req,res) => {
   Blog.findByIdAndUpdate(req.params.id, {$set:
                                               {title: req.body.title,
                                                body: req.body.body,
-                                               postedAt: new Date()}
+                                               postedAt: new Date(),
+                                             tags: req.body.tags}
                                         }).then((result) => {
     result.save().then((result) => {
       res.redirect('/drafts')
