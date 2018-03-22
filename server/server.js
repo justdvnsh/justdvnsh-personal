@@ -75,7 +75,12 @@ app.use('/scripts', express.static(__dirname + '/../node_modules/marked/lib'));
 
 // get the response from the server.
 app.get('/', (req, res) => {
-  res.render('index.hbs')
+  Blog.find({}).limit(3).sort('-postedAt').then((result) => {
+    res.render('index.hbs', {title: result.title, postedAt: result.postedAt, tags: result.tags})
+  }).catch((e) => {
+    console.log(e)
+    res.send(e)
+  })
 })
 
 app.get('/about',(req, res) => {
