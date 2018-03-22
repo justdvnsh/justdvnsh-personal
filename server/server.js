@@ -76,7 +76,16 @@ app.use('/scripts', express.static(__dirname + '/../node_modules/marked/lib'));
 // get the response from the server.
 app.get('/', (req, res) => {
   Blog.find({}).limit(3).sort('-postedAt').then((result) => {
-    res.render('index.hbs', {title: result.title, postedAt: result.postedAt, tags: result.tags})
+    console.log('blogsss......index', result)
+    let blogs = []
+    for (let i in result){
+      let tags = []
+      result[i].tags.forEach((tag) => {
+        tags.push({tag})
+      })
+      blogs.push({title: result[i].title, tags, postedAt: result[i].postedAt, id: result[i]._id})
+    }
+    res.render('index.hbs', {blogs})
   }).catch((e) => {
     console.log(e)
     res.send(e)
@@ -95,7 +104,7 @@ app.get('/work', (req, res) => {
 app.get('/blog',(req, res) => {
   Blog.find({published: true}).sort('-postedAt').limit(5).then((result) => {
     console.log(result[0])
-    let tags = []
+    //let tags = []
     let blogs = []
     for (let i in result) {
       let tags = []
@@ -104,7 +113,7 @@ app.get('/blog',(req, res) => {
       })
       blogs.push({title: result[i].title, body: result[i].body, postedAt: result[i].postedAt, id: result[i]._id, tags});
     }
-    res.render('blog.hbs', {blogs, tags})
+    res.render('blog.hbs', {blogs})
   }).catch((e) => {
     console.log(e)
     res.send({e})
